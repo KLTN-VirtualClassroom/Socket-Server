@@ -24,5 +24,5 @@ const io = new Server(httpServer, {
 var socketsManager = socketManager(io);
 
 httpServer.listen(3131, function () {
-  console.log("App listening on port 3030!");
+  console.log("App listening on port 3131!");
 });
