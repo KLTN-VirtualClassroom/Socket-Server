@@ -59,10 +59,10 @@ export default function (io) {
       scroll_position.ratioX = e.ratioX;
       scroll_position.ratioY = e.ratioY;
       if (scroll_position.ratioX !== null && scroll_position.ratioY !== null)
-        io.emit("sync-scrolling-pdf", scroll_position);
+        socket.broadcast.emit("sync-scrolling-pdf", scroll_position);
     });
-    // if (scroll_position.ratioX !== null && scroll_position.ratioY !== null)
-    //   socket.emit("sync-scrolling-pdf-first-access", scroll_position);
+    if (scroll_position.ratioX !== null && scroll_position.ratioY !== null)
+      socket.emit("sync-scrolling-pdf-first-access", scroll_position);
 
     socket.on("disconnect", () => {
       console.log("A user disconnected");
