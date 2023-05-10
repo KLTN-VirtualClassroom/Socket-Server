@@ -1,18 +1,28 @@
 // exports = module.exports = function(io){
 export default function (io) {
-  var pdfInfo = {
-    pdfStatus: 0,
-    pdfId: "",
-  };
-
-  var current_student_permission = "";
-  var zoom_pdf = 1;
-  var scroll_position = {
-    ratioX: null,
-    ratioY: null,
-  };
+  
   io.on("connection", (socket) => {
-    console.log("A user connected");
+    var pdfInfo = {
+      pdfStatus: 0,
+      pdfId: "",
+    };
+  
+    var room = null;
+  
+    var current_student_permission = "";
+    var zoom_pdf = 1;
+    var scroll_position = {
+      ratioX: null,
+      ratioY: null,
+    };
+
+    //console.log("A user connected");
+    socket.on("get-room-info",(roomId)=>{
+      room = roomId.room;
+      console.log(room)
+      if(!socket.rooms.has(room))
+        socket.join(room);
+    })
 
     //-----------PDF FILE CHOSEN---------------
     socket.emit("get-pdf-status", pdfInfo);
@@ -28,8 +38,9 @@ export default function (io) {
         ratioX: null,
         ratioY: null,
       };
-      console.log(pdfInfo);
-      socket.broadcast.emit("pdf", pdfInfo);
+      //console.log(pdfInfo);
+      console.log(socket.rooms)
+      socket.broadcast.to(room).emit("pdf", pdfInfo);
     });
 
     //------------PERMISSION----------------
@@ -49,20 +60,20 @@ export default function (io) {
     socket.on("pdf-zoom", (e) => {
       //console.log(e.value);
       zoom_pdf = e.value;
-      io.emit("change-pdf-zoom", { value: zoom_pdf });
+      io.to(room).emit("change-pdf-zoom", { value: zoom_pdf });
     });
 
-    socket.emit("pdf-current-zoom", { value: zoom_pdf });
+    socket.to(room).emit("pdf-current-zoom", { value: zoom_pdf });
 
     //-----------------------------------SROLL--------------------------------------
     socket.on("scrolling-pdf", (e) => {
       scroll_position.ratioX = e.ratioX;
       scroll_position.ratioY = e.ratioY;
       if (scroll_position.ratioX !== null && scroll_position.ratioY !== null)
-        socket.broadcast.emit("sync-scrolling-pdf", scroll_position);
+        socket.to(room).emit("sync-scrolling-pdf", scroll_position);
     });
     if (scroll_position.ratioX !== null && scroll_position.ratioY !== null)
-      socket.emit("sync-scrolling-pdf-first-access", scroll_position);
+      socket.to(room).emit("sync-scrolling-pdf-first-access", scroll_position);
 
     socket.on("disconnect", () => {
       console.log("A user disconnected");
