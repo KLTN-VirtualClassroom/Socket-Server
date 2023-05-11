@@ -19,7 +19,6 @@ export default function (io) {
     //console.log("A user connected");
     socket.on("get-room-info",(roomId)=>{
       room = roomId.room;
-      console.log(room)
       if(!socket.rooms.has(room))
         socket.join(room);
     })
@@ -39,7 +38,6 @@ export default function (io) {
         ratioY: null,
       };
       //console.log(pdfInfo);
-      console.log(socket.rooms)
       socket.broadcast.to(room).emit("pdf", pdfInfo);
     });
 
@@ -47,14 +45,11 @@ export default function (io) {
     socket.on("allowance", (role) => {
       console.log(role);
       current_student_permission = role;
-      //socket.emit('pdf',pdf)
-      io.emit("set-role", role);
-
-      // io.emit('')
+      socket.broadcast.to(room).emit("set-role", role);
     });
 
     if (current_student_permission !== "")
-      socket.emit("set-role", current_student_permission);
+      socket.to(room).emit("set-role", current_student_permission);
 
     //---------------ZOOM-------------
     socket.on("pdf-zoom", (e) => {
