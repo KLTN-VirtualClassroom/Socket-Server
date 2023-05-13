@@ -1,5 +1,7 @@
 // exports = module.exports = function(io){
 export default function (io) {
+  var map = [];
+
   io.on("connection", (socket) => {
     var pdfInfo = {
       pdfStatus: 0,
@@ -8,7 +10,7 @@ export default function (io) {
 
     var room = null;
 
-    var current_student_permission = "";
+    var current_student_permission = false;
     var zoom_pdf = 1;
     var scroll_position = {
       ratioX: null,
@@ -19,13 +21,29 @@ export default function (io) {
     socket.on("get-room-info", (roomInfo) => {
       room = roomInfo.roomId;
       if (!socket.rooms.has(room)) socket.join(room);
+      // const roomPdf = map.forEach((pdf) => pdf.room === room);
+      let roomPdf = null;
+      for(let pdf of map)
+        if (pdf.room === room)
+          roomPdf = pdf;
+      if (roomPdf) {
+        console.log("return")
+        console.log(roomPdf)
+        pdfInfo = roomPdf.pdfInfo;
+        zoom_pdf = roomPdf.zoom_pdf;
+        scroll_position = roomPdf.scroll_position;
+        current_student_permission = roomPdf.current_student_permission
+        io.to(room).emit("get-pdf-status", roomPdf.pdfInfo);
+        io.to(room).emit("set-role", roomPdf.current_student_permission);
+        io.to(room).emit("pdf-current-zoom", { value: roomPdf.zoom_pdf });
+        io.to(room).emit("sync-scrolling-pdf-first-access", roomPdf.scroll_position);
+
+      }
     });
 
-    
-
     //-----------PDF FILE CHOSEN---------------
-    socket.emit("get-pdf-status", pdfInfo);
-    // socket.to(room).emit("pdf", pdfInfo);
+    // socket.to(room).emit("get-pdf-status", pdfInfo);
+    //socket.to(room).emit("pdf", pdfInfo);
 
     socket.on("pdf-status", (pobject) => {
       //pdfStatus = pobject.status;
@@ -38,6 +56,18 @@ export default function (io) {
         ratioX: null,
         ratioY: null,
       };
+      var user = {};
+      user.pdfInfo = pdfInfo;
+      user.zoom_pdf = zoom_pdf;
+      user.scroll_position = scroll_position;
+      user.room = room;
+      user.current_student_permission = current_student_permission
+
+      map = map.filter((pdf) => pdf.room !== room);
+
+      map.push(user);
+      //console.log(map);
+
       socket.broadcast.to(room).emit("pdf", pdfInfo);
       // socket.emit("get-pdf-status", pdfInfo);
     });
@@ -45,6 +75,9 @@ export default function (io) {
     //------------PERMISSION----------------
     socket.on("allowance", (role) => {
       current_student_permission = role;
+      map.forEach((pdf) => {
+        if (pdf.room === room) pdf.current_student_permission = current_student_permission;
+      });
       socket.broadcast.to(room).emit("set-role", role);
     });
 
@@ -54,21 +87,31 @@ export default function (io) {
     //---------------ZOOM-------------
     socket.on("pdf-zoom", (e) => {
       zoom_pdf = e.value;
+      map.forEach((pdf) => {
+        if (pdf.room === room) pdf.zoom_pdf = zoom_pdf;
+      });
       socket.broadcast.to(room).emit("change-pdf-zoom", { value: zoom_pdf });
     });
 
-    socket.broadcast.to(room).emit("pdf-current-zoom", { value: zoom_pdf });
+    // socket.to(room).emit("pdf-current-zoom", { value: zoom_pdf });
 
     //-----------------------------------SCROLL--------------------------------------
     socket.on("scrolling-pdf", (e) => {
       scroll_position.ratioX = e.ratioX;
       scroll_position.ratioY = e.ratioY;
       //console.log(scroll_position)
+      map.forEach((pdf) => {
+        if (pdf.room === room) pdf.scroll_position = scroll_position;
+      });
+
       if (scroll_position.ratioX !== null && scroll_position.ratioY !== null)
         socket.broadcast.to(room).emit("sync-scrolling-pdf", scroll_position);
     });
-    if (scroll_position.ratioX !== null && scroll_position.ratioY !== null)
-      socket.to(room).emit("sync-scrolling-pdf-first-access", scroll_position);
+
+    // if (scroll_position.ratioX !== null && scroll_position.ratioY !== null) {
+    //   // const roomPdf = map.forEach(pdf => pdf.room === room)
+    //   socket.to(room).emit("sync-scrolling-pdf-first-access", scroll_position);
+    // }
 
     socket.on("disconnect", () => {
       console.log("A user disconnected");
