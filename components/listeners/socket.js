@@ -10,7 +10,7 @@ export default function (io) {
 
     var room = null;
 
-    var current_student_permission = false;
+    var current_student_permission = "student";
     var zoom_pdf = 1;
     var scroll_position = {
       ratioX: null,
@@ -34,7 +34,7 @@ export default function (io) {
         scroll_position = roomPdf.scroll_position;
         current_student_permission = roomPdf.current_student_permission
         io.to(room).emit("get-pdf-status", roomPdf.pdfInfo);
-        io.to(room).emit("set-role", roomPdf.current_student_permission);
+        io.to(room).emit("set-role", {role: roomPdf.current_student_permission});
         io.to(room).emit("pdf-current-zoom", { value: roomPdf.zoom_pdf });
         io.to(room).emit("sync-scrolling-pdf-first-access", roomPdf.scroll_position);
 
@@ -74,7 +74,7 @@ export default function (io) {
 
     //------------PERMISSION----------------
     socket.on("allowance", (role) => {
-      current_student_permission = role;
+      current_student_permission = role.role;
       map.forEach((pdf) => {
         if (pdf.room === room) pdf.current_student_permission = current_student_permission;
       });
