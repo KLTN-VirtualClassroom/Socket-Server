@@ -17,6 +17,10 @@ export default function (io) {
       ratioY: null,
     };
 
+    var linkGgMeet = null;
+
+    var map_index = null;
+
     //console.log("A user connected");
     socket.on("get-room-info", (roomInfo) => {
       room = roomInfo.roomId;
@@ -26,18 +30,38 @@ export default function (io) {
       for(let pdf of map)
         if (pdf.room === room)
           roomPdf = pdf;
+      for(let i = 0; i<map.length; i++)
+        if(map[i].room === room){
+          map_index = i;
+          break;
+        }
       if (roomPdf) {
-        console.log("return")
-        console.log(roomPdf)
+        //console.log("return")
+        console.log(map_index)
         pdfInfo = roomPdf.pdfInfo;
         zoom_pdf = roomPdf.zoom_pdf;
         scroll_position = roomPdf.scroll_position;
         current_student_permission = roomPdf.current_student_permission
+        linkGgMeet = roomPdf.linkGgMeet
+
         io.to(room).emit("get-pdf-status", roomPdf.pdfInfo);
         io.to(room).emit("set-role", {role: roomPdf.current_student_permission});
         io.to(room).emit("pdf-current-zoom", { value: roomPdf.zoom_pdf });
         io.to(room).emit("sync-scrolling-pdf-first-access", roomPdf.scroll_position);
-
+        io.to(room).emit("redirect-meeting", {linkMeeting: roomPdf.linkGgMeet})
+      }
+      else{
+        var user = {};
+        user.pdfInfo = pdfInfo;
+        user.zoom_pdf = zoom_pdf;
+        user.scroll_position = scroll_position;
+        user.room = room;
+        user.current_student_permission = current_student_permission
+        user.linkGgMeet = linkGgMeet
+  
+       // map = map.filter((pdf) => pdf.room !== room);
+  
+        map.push(user);
       }
     });
 
@@ -56,16 +80,20 @@ export default function (io) {
         ratioX: null,
         ratioY: null,
       };
-      var user = {};
-      user.pdfInfo = pdfInfo;
-      user.zoom_pdf = zoom_pdf;
-      user.scroll_position = scroll_position;
-      user.room = room;
-      user.current_student_permission = current_student_permission
 
-      map = map.filter((pdf) => pdf.room !== room);
+      map.forEach((pdf) => {
+        if (pdf.room === room) pdf.pdfInfo = pdfInfo;
+      });
+      // var user = {};
+      // user.pdfInfo = pdfInfo;
+      // user.zoom_pdf = zoom_pdf;
+      // user.scroll_position = scroll_position;
+      // user.room = room;
+      // user.current_student_permission = current_student_permission
 
-      map.push(user);
+      // map = map.filter((pdf) => pdf.room !== room);
+
+      // map.push(user);
       //console.log(map);
 
       socket.broadcast.to(room).emit("pdf", pdfInfo);
@@ -112,6 +140,13 @@ export default function (io) {
     //   // const roomPdf = map.forEach(pdf => pdf.room === room)
     //   socket.to(room).emit("sync-scrolling-pdf-first-access", scroll_position);
     // }
+
+    socket.on("create-redirect-meeting", (link) => {
+      console.log(link)
+      linkGgMeet = link.linkMeeting;
+      map[map_index].linkGgMeet = linkGgMeet;
+      socket.broadcast.to(room).emit('redirect-meeting', {linkMeeting: linkGgMeet})
+    })
 
     socket.on("disconnect", () => {
       console.log("A user disconnected");
