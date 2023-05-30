@@ -24,6 +24,7 @@ export default function (io) {
     //console.log("A user connected");
     socket.on("get-room-info", (roomInfo) => {
       room = roomInfo.roomId;
+      const type = roomInfo.type;
       if (!socket.rooms.has(room)) socket.join(room);
       // const roomPdf = map.forEach((pdf) => pdf.room === room);
       let roomPdf = null;
@@ -48,7 +49,8 @@ export default function (io) {
         io.to(room).emit("set-role", {role: roomPdf.current_student_permission});
         io.to(room).emit("pdf-current-zoom", { value: roomPdf.zoom_pdf });
         io.to(room).emit("sync-scrolling-pdf-first-access", roomPdf.scroll_position);
-        io.to(room).emit("redirect-meeting", {linkMeeting: roomPdf.linkGgMeet})
+        if(type === "call")
+          io.to(room).emit("redirect-meeting", {linkMeeting: roomPdf.linkGgMeet})
       }
       else{
         var user = {};
