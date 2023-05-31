@@ -38,19 +38,25 @@ export default function (io) {
         }
       if (roomPdf) {
         //console.log("return")
-        console.log(map_index)
+        //console.log(map_index)
         pdfInfo = roomPdf.pdfInfo;
         zoom_pdf = roomPdf.zoom_pdf;
         scroll_position = roomPdf.scroll_position;
         current_student_permission = roomPdf.current_student_permission
         linkGgMeet = roomPdf.linkGgMeet
 
-        io.to(room).emit("get-pdf-status", roomPdf.pdfInfo);
-        io.to(room).emit("set-role", {role: roomPdf.current_student_permission});
-        io.to(room).emit("pdf-current-zoom", { value: roomPdf.zoom_pdf });
-        io.to(room).emit("sync-scrolling-pdf-first-access", roomPdf.scroll_position);
+        // io.to(room).emit("get-pdf-status", roomPdf.pdfInfo);
+        // io.to(room).emit("set-role", {role: roomPdf.current_student_permission});
+        // io.to(room).emit("pdf-current-zoom", { value: roomPdf.zoom_pdf });
+        // io.to(room).emit("sync-scrolling-pdf-first-access", roomPdf.scroll_position);
+        // if(type === "call")
+        //   io.to(room).emit("redirect-meeting", {linkMeeting: roomPdf.linkGgMeet})
+        socket.emit("get-pdf-status", roomPdf.pdfInfo);
+        socket.emit("set-role", {role: roomPdf.current_student_permission});
+        socket.emit("pdf-current-zoom", { value: roomPdf.zoom_pdf });
+        socket.emit("sync-scrolling-pdf-first-access", roomPdf.scroll_position);
         if(type === "call")
-          io.to(room).emit("redirect-meeting", {linkMeeting: roomPdf.linkGgMeet})
+          socket.emit("redirect-meeting", {linkMeeting: roomPdf.linkGgMeet})
       }
       else{
         var user = {};
