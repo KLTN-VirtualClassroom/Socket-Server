@@ -153,6 +153,7 @@ export default function (io) {
       console.log(link)
       linkGgMeet = link.linkMeeting;
       map[map_index].linkGgMeet = linkGgMeet;
+      setTimeout(()=>map[map_index].linkGgMeet=null, 1800000);
       socket.broadcast.to(room).emit('redirect-meeting', {linkMeeting: linkGgMeet})
     })
 
