@@ -57,8 +57,6 @@ export default function (io) {
         socket.emit("sync-scrolling-pdf-first-access", roomPdf.scroll_position);
         if(type === "call")
           socket.emit("redirect-meeting", {linkMeeting: roomPdf.linkGgMeet})
-        console.log(roomPdf.linkGgMeet)
-        console.log("index: "+map_index)
 
       }
       else{
@@ -71,7 +69,8 @@ export default function (io) {
         user.linkGgMeet = linkGgMeet
   
        // map = map.filter((pdf) => pdf.room !== room);
-  
+       console.log(user)
+
         map.push(user);
         map_index = map.length -1;
 
@@ -157,16 +156,20 @@ export default function (io) {
     // }
 
     socket.on("create-redirect-meeting", (link) => {
-      console.log(link)
       linkGgMeet = link.linkMeeting;
-      //console.log(map[map_index])
+      console.log(map[map_index])
       map[map_index].linkGgMeet = link.linkMeeting;
       setTimeout(()=>map[map_index].linkGgMeet=null, 1800000);
       socket.broadcast.to(room).emit('redirect-meeting', {linkMeeting: linkGgMeet})
     })
 
     socket.on("remove-redirect-meeting",(data)=>{
-      console.log("cancel")
+      console.log("cancel");
+      console.log(map[map_index])
+
+      linkGgMeet = null
+      map[map_index].linkGgMeet = null;
+
       socket.broadcast.to(room).emit('cancel-redirect-meeting', {linkMeeting: linkGgMeet})
     })
 
