@@ -72,7 +72,6 @@ export default function (io) {
 
         map.push(user);
         map_index = map.length - 1;
-
       }
     });
 
@@ -176,39 +175,40 @@ export default function (io) {
     });
 
     socket.on("disconnect", async () => {
-      await axios
-        .post("https://chat.virtedy.com/api/v1/login", {
-          // username: process.env.USER_ADMIN,
-          // password: process.env.PASSWORD_ADMIN,
-          username: "nghianguyen",
-          password: "12345678"
-        })
-        .then(async function (responseMain) {
-         
-          if (responseMain.data.status === "success") {
-            const authTokenAdmin = responseMain.data.data.authToken;
-            const userIdAdmin = responseMain.data.data.userId;
-            await axios.post(
-              `https://chat.virtedy.com/api/v1/chat.postMessage`,
-              {
-                channel: room,
-                alias: " ",
-                emoji: ":none:",
-                text: `**${username}** offline`,
-              },
-              {
-                headers: {
-                  "X-Auth-Token": authTokenAdmin,
-                  "X-User-Id": userIdAdmin,
+      if (username !== undefined || username !== "") {
+        await axios
+          .post("https://chat.virtedy.com/api/v1/login", {
+            // username: process.env.USER_ADMIN,
+            // password: process.env.PASSWORD_ADMIN,
+            username: "nghianguyen",
+            password: "12345678",
+          })
+          .then(async function (responseMain) {
+            if (responseMain.data.status === "success") {
+              const authTokenAdmin = responseMain.data.data.authToken;
+              const userIdAdmin = responseMain.data.data.userId;
+              await axios.post(
+                `https://chat.virtedy.com/api/v1/chat.postMessage`,
+                {
+                  channel: room,
+                  alias: " ",
+                  emoji: ":none:",
+                  text: `**${username}** offline`,
                 },
-              }
-            );
-          }
-        })
-        .catch(function () {
-          console.log("AUTH FAIL");
-          //res.sendStatus(401);
-        });
+                {
+                  headers: {
+                    "X-Auth-Token": authTokenAdmin,
+                    "X-User-Id": userIdAdmin,
+                  },
+                }
+              );
+            }
+          })
+          .catch(function () {
+            console.log("AUTH FAIL");
+            //res.sendStatus(401);
+          });
+      }
       console.log("A user disconnected");
     });
   });
