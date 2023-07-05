@@ -175,7 +175,7 @@ export default function (io) {
     });
 
     socket.on("disconnect", async () => {
-      if (username !== undefined || username !== "") {
+      if (username !== undefined && username !== "" && username !== "undefined") {
         await axios
           .post("https://chat.virtedy.com/api/v1/login", {
             // username: process.env.USER_ADMIN,
