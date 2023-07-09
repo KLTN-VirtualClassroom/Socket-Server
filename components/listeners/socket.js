@@ -177,7 +177,7 @@ export default function (io) {
     socket.on("disconnect", async () => {
       if (username !== undefined && username !== "" && username !== "undefined") {
         await axios
-          .post("https://chat.virtedy.com/api/v1/login", {
+          .post("https://chat3.virtedy.com/api/v1/login", {
             // username: process.env.USER_ADMIN,
             // password: process.env.PASSWORD_ADMIN,
             username: "nghianguyen",
@@ -188,7 +188,7 @@ export default function (io) {
               const authTokenAdmin = responseMain.data.data.authToken;
               const userIdAdmin = responseMain.data.data.userId;
               await axios.post(
-                `https://chat.virtedy.com/api/v1/chat.postMessage`,
+                `https://chat3.virtedy.com/api/v1/chat.postMessage`,
                 {
                   channel: room,
                   alias: " ",
