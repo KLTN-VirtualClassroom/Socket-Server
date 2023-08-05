@@ -90,9 +90,16 @@ export default function (io) {
         ratioX: null,
         ratioY: null,
       };
-
+      current_student_permission = "student"
+      console.log("Change-status "+ room)
       map.forEach((pdf) => {
-        if (pdf.room === room) pdf.pdfInfo = pdfInfo;
+        if (pdf.room === room) {
+          pdf.pdfInfo = pdfInfo;
+          pdf.zoom_pdf = zoom_pdf;
+          pdf.scroll_position = scroll_position;
+          pdf.current_student_permission = current_student_permission;
+        }
+
       });
       // var user = {};
       // user.pdfInfo = pdfInfo;
@@ -175,7 +182,11 @@ export default function (io) {
     });
 
     socket.on("disconnect", async () => {
-      if (username !== undefined && username !== "" && username !== "undefined") {
+      if (
+        username !== undefined &&
+        username !== "" &&
+        username !== "undefined"
+      ) {
         await axios
           .post("https://chat3.virtedy.com/api/v1/login", {
             // username: process.env.USER_ADMIN,
